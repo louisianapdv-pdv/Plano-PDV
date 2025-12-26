@@ -1,296 +1,428 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDV System - Sistema de Ponto de Venda</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>PDV Adega System - Plataforma Completa</title>
+    <link rel="icon" href="logo.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="logo.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
+    <!-- Bibliotecas externas -->
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    
     <style>
         :root {
-            --primary: #4361ee;
-            --primary-dark: #3a56d4;
-            --secondary: #7209b7;
-            --success: #4cc9f0;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --gray: #6c757d;
-            --light-gray: #e9ecef;
+            --primary-color: #1a1a1a;
+            --secondary-color: #333;
+            --accent-color: #4f46e5;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --light-color: #f8fafc;
+            --dark-color: #1e293b;
+            --gray-color: #6b7280;
             --border-radius: 12px;
-            --shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
             --transition: all 0.3s ease;
         }
 
         * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background-color: #f5f7fb;
-            color: var(--dark);
-            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
-        .container {
+        /* ===== CONTAINER PRINCIPAL ===== */
+        .main-container {
             width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* ===== HEADER GERAL ===== */
-        .main-header {
+            max-width: 1400px;
             background: white;
+            border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            overflow: hidden;
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        .header-content {
+        /* ===== HEADER DO SISTEMA ===== */
+        .system-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 50;
         }
 
-        .logo {
+        .system-logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             text-decoration: none;
-            color: var(--dark);
+            color: white;
         }
 
-        .logo i {
+        .system-logo i {
             font-size: 2rem;
-            color: var(--primary);
+            color: var(--accent-color);
         }
 
-        .logo h1 {
+        .system-logo h1 {
             font-size: 1.8rem;
             font-weight: 700;
+            letter-spacing: -0.025em;
         }
 
-        .logo span {
-            color: var(--primary);
+        .system-logo span {
+            color: var(--accent-color);
         }
 
-        .nav-menu {
+        .user-menu {
             display: flex;
-            list-style: none;
-            gap: 2rem;
             align-items: center;
-        }
-
-        .nav-menu a {
-            text-decoration: none;
-            color: var(--dark);
-            font-weight: 600;
-            transition: var(--transition);
-            padding: 8px 0;
-            position: relative;
-        }
-
-        .nav-menu a:hover {
-            color: var(--primary);
-        }
-
-        .nav-menu a.active {
-            color: var(--primary);
-        }
-
-        .nav-menu a.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background-color: var(--primary);
-            border-radius: 3px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .btn-outline {
-            background-color: transparent;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-
-        .btn-outline:hover {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .btn-success {
-            background-color: #2ecc71;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background-color: #27ae60;
+            gap: 1.5rem;
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
         }
 
         .user-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            border: 2px solid var(--light-gray);
+            border: 2px solid var(--accent-color);
             object-fit: cover;
-        }
-
-        .btn-logout {
-            background-color: var(--light-gray);
-            color: var(--dark);
-            border: none;
-            border-radius: 8px;
-            padding: 8px 15px;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-logout:hover {
-            background-color: #e74c3c;
-            color: white;
-        }
-
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--dark);
-            cursor: pointer;
-        }
-
-        /* ===== PÁGINA INICIAL (PÚBLICA) ===== */
-        .hero-section {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 5rem 0;
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-
-        .hero-content h2 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .hero-content p {
-            font-size: 1.2rem;
-            max-width: 700px;
-            margin: 0 auto 2rem;
-            opacity: 0.9;
-        }
-
-        .features {
-            padding: 4rem 0;
-            background-color: white;
-        }
-
-        .section-title {
-            text-align: center;
-            margin-bottom: 3rem;
-            font-size: 2.5rem;
-            color: var(--dark);
-        }
-
-        .section-title span {
-            color: var(--primary);
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .feature-card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            box-shadow: var(--shadow);
-            text-align: center;
-            transition: var(--transition);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-        }
-
-        .feature-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1.5rem;
-            font-size: 2rem;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-name {
+            font-weight: 600;
             color: white;
         }
 
-        .feature-card h3 {
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ===== CONTEÚDO PRINCIPAL ===== */
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 250px;
+            background: var(--light-color);
+            border-right: 1px solid #e5e7eb;
+            padding: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+            padding: 0 1.5rem;
+        }
+
+        .nav-section h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--dark-color);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--accent-color);
+        }
+
+        .nav-item.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .subscription-status {
+            margin-top: auto;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .subscription-status h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .subscription-status p {
+            font-size: 1.2rem;
+            font-weight: 700;
             margin-bottom: 1rem;
-            color: var(--dark);
         }
 
-        .feature-card p {
-            color: var(--gray);
+        .btn-renew {
+            background: white;
+            color: var(--accent-color);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
         }
 
-        /* ===== SEÇÃO DE PLANOS (PÚBLICA) ===== */
-        .plans-section {
-            padding: 4rem 0;
+        .btn-renew:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* ===== ÁREA DE CONTEÚDO ===== */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: #f9fafb;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            color: var(--gray-color);
+            font-size: 1rem;
+        }
+
+        /* ===== PÁGINA DE LOGIN ===== */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 450px;
+            padding: 3rem;
+            text-align: center;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-logo {
+            margin-bottom: 2rem;
+        }
+
+        .login-logo i {
+            font-size: 3.5rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .login-logo h1 {
+            font-size: 2.2rem;
+            color: var(--dark-color);
+            font-weight: 700;
+        }
+
+        .login-logo span {
+            color: var(--accent-color);
+        }
+
+        .login-message {
+            margin-bottom: 2rem;
+            color: var(--gray-color);
+            line-height: 1.6;
+        }
+
+        .btn-google {
+            background-color: #fff;
+            color: #444;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-google:hover {
             background-color: #f8f9fa;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-google img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: var(--gray-color);
+        }
+
+        .login-divider::before, .login-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: #e5e7eb;
+        }
+
+        .login-divider span {
+            padding: 0 15px;
+        }
+
+        .admin-only {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+
+        .admin-only i {
+            color: #f39c12;
+            margin-right: 8px;
+        }
+
+        .login-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 1rem;
+            color: #721c24;
+            display: none;
+        }
+
+        /* ===== PÁGINA DE PLANOS ===== */
+        .plans-section {
+            padding: 2rem 0;
         }
 
         .plans-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
+            margin-top: 2rem;
         }
 
         .plan-card {
@@ -304,11 +436,11 @@
 
         .plan-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         }
 
         .plan-card.popular {
-            border: 3px solid var(--primary);
+            border: 3px solid var(--accent-color);
             transform: scale(1.05);
         }
 
@@ -320,7 +452,7 @@
             position: absolute;
             top: 20px;
             right: -30px;
-            background-color: var(--primary);
+            background-color: var(--accent-color);
             color: white;
             padding: 8px 30px;
             font-weight: 600;
@@ -373,22 +505,18 @@
 
         .plan-features li {
             padding: 10px 0;
-            border-bottom: 1px solid var(--light-gray);
+            border-bottom: 1px solid #f1f5f9;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .plan-features li i {
-            color: #2ecc71;
+        .plan-features li i.fa-check {
+            color: var(--success-color);
         }
 
-        .plan-features li.disabled {
-            color: var(--gray);
-        }
-
-        .plan-features li.disabled i {
-            color: #e74c3c;
+        .plan-features li i.fa-times {
+            color: var(--danger-color);
         }
 
         .plan-footer {
@@ -396,94 +524,230 @@
             text-align: center;
         }
 
-        /* ===== SEÇÃO DE PAGAMENTO ===== */
-        .payment-section {
-            padding: 4rem 0;
-            background-color: white;
-        }
-
-        .payment-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .payment-methods {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .payment-method {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            border: 2px solid var(--light-gray);
-            border-radius: var(--border-radius);
+        .btn-select-plan {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
+            width: 100%;
             transition: var(--transition);
         }
 
-        .payment-method:hover {
-            border-color: var(--primary);
+        .btn-select-plan:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
         }
 
-        .payment-method.selected {
-            border-color: var(--primary);
-            background-color: rgba(67, 97, 238, 0.05);
+        /* ===== PÁGINA DE PAGAMENTO PIX ===== */
+        .payment-container {
+            max-width: 800px;
+            margin: 0 auto;
         }
 
-        .payment-method-icon {
-            font-size: 2rem;
-            color: var(--primary);
-        }
-
-        .payment-form {
+        .pix-box {
             background: white;
             border-radius: var(--border-radius);
             padding: 2rem;
             box-shadow: var(--shadow);
+            margin-top: 2rem;
         }
 
-        .form-group {
-            margin-bottom: 1.5rem;
+        .payment-header {
+            text-align: center;
+            margin-bottom: 2rem;
         }
 
-        .form-group label {
-            display: block;
+        .payment-header h3 {
+            font-size: 1.5rem;
+            color: var(--dark-color);
             margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--dark);
         }
 
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--light-gray);
+        .payment-header p {
+            color: var(--gray-color);
+        }
+
+        .pix-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 2rem;
+            padding: 15px;
             border-radius: 8px;
-            font-size: 1rem;
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .pix-status.pending {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .pix-status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .pix-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .pix-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .qr-section, .code-section {
+            text-align: center;
+        }
+
+        .qr-section h4, .code-section h4 {
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .qr-container {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+        }
+
+        #pixQrCode {
+            width: 250px;
+            height: 250px;
+            margin: 0 auto;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .pix-code-box {
+            background: #f1f3f4;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #e0e0e0;
+            position: relative;
+            cursor: pointer;
             transition: var(--transition);
         }
 
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
+        .pix-code-box:hover {
+            background: #e8f0fe;
+            border-color: var(--accent-color);
         }
 
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+        .pix-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            color: var(--dark-color);
+            line-height: 1.5;
         }
 
-        .summary {
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            background: #4338ca;
+        }
+
+        .copy-btn.copied {
+            background: var(--success-color);
+        }
+
+        .timer-section {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .timer-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--gray-color);
+        }
+
+        .timer {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .timer-warning {
+            color: var(--danger-color);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .instructions {
             background: #f8f9fa;
             border-radius: var(--border-radius);
             padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .instructions h4 {
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instructions ol {
+            margin-left: 1.5rem;
+        }
+
+        .instructions li {
+            margin-bottom: 0.8rem;
+            padding-left: 0.5rem;
+        }
+
+        .order-summary {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .order-summary h4 {
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .summary-item {
@@ -491,236 +755,90 @@
             justify-content: space-between;
             margin-bottom: 1rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid var(--light-gray);
+            border-bottom: 1px solid #f1f5f9;
         }
 
         .summary-total {
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: var(--primary);
+            color: var(--accent-color);
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid #f1f5f9;
         }
 
-        /* ===== ÁREA ADMINISTRATIVA ===== */
-        .app-container {
-            display: none;
-        }
-
-        .admin-header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 1.5rem 0;
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            gap: 30px;
-            margin-bottom: 3rem;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            padding: 1.5rem;
-            height: fit-content;
-        }
-
-        .sidebar h3 {
-            margin-bottom: 1.5rem;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--light-gray);
-            color: var(--primary);
-        }
-
-        .sidebar-menu {
-            list-style: none;
-        }
-
-        .sidebar-menu li {
-            margin-bottom: 10px;
-        }
-
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 15px;
-            color: var(--dark);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: var(--transition);
-        }
-
-        .sidebar-menu a:hover, .sidebar-menu a.active {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        /* Conteúdo Principal Admin */
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .stats-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            transition: var(--transition);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            color: white;
-        }
-
-        .stat-icon.blue {
-            background-color: var(--primary);
-        }
-
-        .stat-icon.green {
-            background-color: #2ecc71;
-        }
-
-        .stat-icon.orange {
-            background-color: #e67e22;
-        }
-
-        .stat-icon.purple {
-            background-color: var(--secondary);
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .table-container {
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            margin-bottom: 3rem;
-        }
-
-        table {
+        /* ===== PDV SYSTEM (Embedded) ===== */
+        .pdv-embed-container {
             width: 100%;
-            border-collapse: collapse;
+            height: calc(100vh - 200px);
+            border: 1px solid #e5e7eb;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background: white;
         }
 
-        thead {
-            background-color: var(--primary);
-            color: white;
+        #pdvFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
 
-        th, td {
-            padding: 15px;
-            text-align: left;
-        }
-
-        .status {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+        /* ===== BOTÕES GERAIS ===== */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
             font-weight: 600;
-        }
-
-        .status.active {
-            background-color: rgba(46, 204, 113, 0.2);
-            color: #27ae60;
-        }
-
-        .status.pending {
-            background-color: rgba(241, 196, 15, 0.2);
-            color: #f39c12;
-        }
-
-        /* ===== FOOTER ===== */
-        .main-footer {
-            background-color: var(--dark);
-            color: white;
-            padding: 3rem 0 2rem;
-            margin-top: 4rem;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .footer-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 1rem;
-        }
-
-        .footer-logo i {
-            font-size: 2rem;
-            color: var(--primary);
-        }
-
-        .footer-links h4 {
-            margin-bottom: 1.5rem;
-            color: white;
-        }
-
-        .footer-links ul {
-            list-style: none;
-        }
-
-        .footer-links li {
-            margin-bottom: 0.8rem;
-        }
-
-        .footer-links a {
-            color: #aaa;
-            text-decoration: none;
+            cursor: pointer;
             transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .footer-links a:hover {
+        .btn-primary {
+            background: var(--accent-color);
             color: white;
-            padding-left: 5px;
         }
 
-        .footer-bottom {
-            text-align: center;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: #aaa;
+        .btn-primary:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
         }
 
-        /* ===== MODAIS ===== */
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* ===== MODAL DE CONFIRMAÇÃO ===== */
         .modal {
             display: none;
             position: fixed;
@@ -728,8 +846,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
         }
@@ -737,12 +855,16 @@
         .modal-content {
             background: white;
             border-radius: var(--border-radius);
-            width: 90%;
-            max-width: 500px;
             padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            max-height: 90vh;
-            overflow-y: auto;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow);
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .modal-header {
@@ -751,7 +873,12 @@
             align-items: center;
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid var(--light-gray);
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-header h3 {
+            color: var(--dark-color);
+            font-size: 1.5rem;
         }
 
         .close-modal {
@@ -759,596 +886,529 @@
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
-            color: var(--gray);
+            color: var(--gray-color);
         }
 
-        /* ===== LOGIN MODAL ===== */
-        .login-modal-content {
-            max-width: 400px;
+        .modal-body {
+            margin-bottom: 1.5rem;
         }
 
-        .login-options {
+        .modal-footer {
             display: flex;
-            flex-direction: column;
+            justify-content: flex-end;
             gap: 1rem;
-            margin-top: 2rem;
-        }
-
-        .btn-google {
-            background-color: #fff;
-            color: #444;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius);
-            padding: 12px 24px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .btn-google:hover {
-            background-color: #f8f9fa;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-google img {
-            width: 20px;
-            height: 20px;
         }
 
         /* ===== RESPONSIVIDADE ===== */
-        @media (max-width: 992px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            .sidebar {
-                display: none;
-            }
-            
-            .payment-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .nav-menu {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
-                background: white;
+        @media (max-width: 1024px) {
+            .content-wrapper {
                 flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
                 padding: 1rem;
-                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+                border-right: none;
+                border-bottom: 1px solid #e5e7eb;
             }
-            
-            .nav-menu.active {
+
+            .nav-section {
+                padding: 0 1rem;
+            }
+
+            .nav-items {
                 display: flex;
+                overflow-x: auto;
+                gap: 1rem;
             }
-            
-            .mobile-menu-btn {
-                display: block;
+
+            .nav-item {
+                white-space: nowrap;
             }
         }
 
         @media (max-width: 768px) {
-            .hero-content h2 {
-                font-size: 2.2rem;
+            .system-header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
             }
-            
-            .section-title {
-                font-size: 2rem;
+
+            .user-menu {
+                width: 100%;
+                justify-content: space-between;
             }
-            
+
+            .main-content {
+                padding: 1.5rem;
+            }
+
             .plan-card.popular {
                 transform: none;
             }
-            
+
             .plan-card.popular:hover {
                 transform: translateY(-10px);
             }
         }
 
-        @media (max-width: 576px) {
+        @media (max-width: 640px) {
+            .login-box {
+                padding: 2rem;
+            }
+
             .plans-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .row {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Header Público (sempre visível) -->
-    <header class="main-header">
-        <div class="container header-content">
-            <a href="#" class="logo">
+    <!-- Página de Login (inicial) -->
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <div class="login-logo">
                 <i class="fas fa-cash-register"></i>
-                <h1>PDV<span>System</span></h1>
-            </a>
+                <h1>PDV<span>Adega</span></h1>
+            </div>
             
-            <button class="mobile-menu-btn" id="mobileMenuBtn">
-                <i class="fas fa-bars"></i>
+            <div class="login-message">
+                <p>Bem-vindo ao sistema PDV Adega. Faça login para acessar sua conta ou adquirir um plano.</p>
+            </div>
+            
+            <button id="googleLoginBtn" class="btn-google">
+                <img src="https://www.google.com/favicon.ico" alt="Google">
+                Entrar com Google
             </button>
             
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="#home" class="active">Início</a></li>
-                <li><a href="#features">Recursos</a></li>
-                <li><a href="#plans">Planos</a></li>
-                <li><a href="#payment">Pagamento</a></li>
-                <li><a href="#contact">Contato</a></li>
-                <li id="authSection">
-                    <!-- Conteúdo dinâmico (login/logout) -->
-                </li>
-            </ul>
+            <div class="login-divider">
+                <span>ou</span>
+            </div>
+            
+            <div class="admin-only">
+                <i class="fas fa-shield-alt"></i>
+                <strong>Acesso Administrativo:</strong> Se você já tem um plano ativo, faça login para acessar o PDV.
+            </div>
+            
+            <div id="loginError" class="login-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorMessage">Erro ao fazer login. Tente novamente.</span>
+            </div>
         </div>
-    </header>
-
-    <!-- Página Pública (para não administradores) -->
-    <div id="publicPage">
-        <!-- Seção Hero -->
-        <section class="hero-section" id="home">
-            <div class="container hero-content">
-                <h2>PDV System Completo para seu Negócio</h2>
-                <p>Sistema de ponto de venda completo com controle de estoque, vendas, relatórios e muito mais. A solução ideal para pequenos e médios negócios.</p>
-                <div class="cta-buttons">
-                    <button class="btn btn-primary" onclick="scrollToSection('plans')">
-                        <i class="fas fa-rocket"></i> Ver Planos
-                    </button>
-                    <button class="btn btn-outline" onclick="openLoginModal()">
-                        <i class="fas fa-sign-in-alt"></i> Área do Cliente
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Seção Recursos -->
-        <section class="features" id="features">
-            <div class="container">
-                <h2 class="section-title">Nossos <span>Recursos</span></h2>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <h3>Vendas Rápidas</h3>
-                        <p>Interface intuitiva para realizar vendas de forma ágil e eficiente.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-boxes"></i>
-                        </div>
-                        <h3>Controle de Estoque</h3>
-                        <p>Controle completo do seu estoque com alertas de reposição.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <h3>Relatórios Avançados</h3>
-                        <p>Relatórios detalhados para tomada de decisões estratégicas.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-mobile-alt"></i>
-                        </div>
-                        <h3>Multiplataforma</h3>
-                        <p>Acesse de qualquer dispositivo: computador, tablet ou celular.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <h3>Segurança</h3>
-                        <p>Seus dados protegidos com criptografia e backup automático.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-headset"></i>
-                        </div>
-                        <h3>Suporte 24/7</h3>
-                        <p>Equipe especializada disponível para ajudar quando precisar.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Seção Planos -->
-        <section class="plans-section" id="plans">
-            <div class="container">
-                <h2 class="section-title">Escolha seu <span>Plano</span></h2>
-                <p class="section-subtitle" style="text-align: center; margin-bottom: 3rem; color: var(--gray); max-width: 700px; margin-left: auto; margin-right: auto;">
-                    Encontre o plano perfeito para o seu negócio. Todos incluem os recursos essenciais do PDV System.
-                </p>
-                
-                <div class="plans-container">
-                    <!-- Plano Básico -->
-                    <div class="plan-card plan-basic">
-                        <div class="plan-header">
-                            <h3 class="plan-title">Básico</h3>
-                            <div class="plan-price">R$ 49,90</div>
-                            <div class="plan-period">por mês</div>
-                        </div>
-                        <div class="plan-features">
-                            <ul>
-                                <li><i class="fas fa-check"></i> Até 100 transações/mês</li>
-                                <li><i class="fas fa-check"></i> 1 usuário</li>
-                                <li><i class="fas fa-check"></i> Suporte por e-mail</li>
-                                <li><i class="fas fa-check"></i> Relatórios básicos</li>
-                                <li class="disabled"><i class="fas fa-times"></i> Integração com ERP</li>
-                                <li class="disabled"><i class="fas fa-times"></i> Controle de múltiplas lojas</li>
-                            </ul>
-                        </div>
-                        <div class="plan-footer">
-                            <button class="btn btn-primary" style="width: 100%;" onclick="selectPlan('Básico', 49.90)">
-                                <i class="fas fa-shopping-cart"></i> Contratar Agora
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Plano Pro (Mais Popular) -->
-                    <div class="plan-card plan-pro popular">
-                        <div class="plan-badge">MAIS POPULAR</div>
-                        <div class="plan-header">
-                            <h3 class="plan-title">Profissional</h3>
-                            <div class="plan-price">R$ 99,90</div>
-                            <div class="plan-period">por mês</div>
-                        </div>
-                        <div class="plan-features">
-                            <ul>
-                                <li><i class="fas fa-check"></i> Até 500 transações/mês</li>
-                                <li><i class="fas fa-check"></i> Até 3 usuários</li>
-                                <li><i class="fas fa-check"></i> Suporte prioritário</li>
-                                <li><i class="fas fa-check"></i> Relatórios avançados</li>
-                                <li><i class="fas fa-check"></i> Integração com ERP</li>
-                                <li class="disabled"><i class="fas fa-times"></i> Controle de múltiplas lojas</li>
-                            </ul>
-                        </div>
-                        <div class="plan-footer">
-                            <button class="btn btn-primary" style="width: 100%;" onclick="selectPlan('Profissional', 99.90)">
-                                <i class="fas fa-shopping-cart"></i> Contratar Agora
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Plano Premium -->
-                    <div class="plan-card plan-premium">
-                        <div class="plan-header">
-                            <h3 class="plan-title">Premium</h3>
-                            <div class="plan-price">R$ 199,90</div>
-                            <div class="plan-period">por mês</div>
-                        </div>
-                        <div class="plan-features">
-                            <ul>
-                                <li><i class="fas fa-check"></i> Transações ilimitadas</li>
-                                <li><i class="fas fa-check"></i> Até 10 usuários</li>
-                                <li><i class="fas fa-check"></i> Suporte 24/7</li>
-                                <li><i class="fas fa-check"></i> Relatórios personalizados</li>
-                                <li><i class="fas fa-check"></i> Integração completa</li>
-                                <li><i class="fas fa-check"></i> Controle de múltiplas lojas</li>
-                            </ul>
-                        </div>
-                        <div class="plan-footer">
-                            <button class="btn btn-primary" style="width: 100%;" onclick="selectPlan('Premium', 199.90)">
-                                <i class="fas fa-shopping-cart"></i> Contratar Agora
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Seção Pagamento -->
-        <section class="payment-section" id="payment">
-            <div class="container">
-                <h2 class="section-title">Finalizar <span>Pagamento</span></h2>
-                <div class="payment-container" id="paymentContainer">
-                    <!-- Lado esquerdo: Formulário de pagamento -->
-                    <div class="payment-form">
-                        <h3 style="margin-bottom: 1.5rem;">Informações de Pagamento</h3>
-                        
-                        <div class="payment-methods">
-                            <div class="payment-method selected" onclick="selectPaymentMethod('credit')">
-                                <div class="payment-method-icon">
-                                    <i class="far fa-credit-card"></i>
-                                </div>
-                                <div>
-                                    <h4>Cartão de Crédito</h4>
-                                    <p>Pague com seu cartão de crédito</p>
-                                </div>
-                            </div>
-                            <div class="payment-method" onclick="selectPaymentMethod('pix')">
-                                <div class="payment-method-icon">
-                                    <i class="fas fa-qrcode"></i>
-                                </div>
-                                <div>
-                                    <h4>PIX</h4>
-                                    <p>Pagamento instantâneo via PIX</p>
-                                </div>
-                            </div>
-                            <div class="payment-method" onclick="selectPaymentMethod('boleto')">
-                                <div class="payment-method-icon">
-                                    <i class="fas fa-barcode"></i>
-                                </div>
-                                <div>
-                                    <h4>Boleto Bancário</h4>
-                                    <p>Pague em qualquer banco</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div id="creditCardForm">
-                            <div class="form-group">
-                                <label for="cardNumber">Número do Cartão</label>
-                                <input type="text" id="cardNumber" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19">
-                            </div>
-                            <div class="row">
-                                <div class="form-group">
-                                    <label for="cardExpiry">Validade</label>
-                                    <input type="text" id="cardExpiry" class="form-control" placeholder="MM/AA">
-                                </div>
-                                <div class="form-group">
-                                    <label for="cardCVC">CVC</label>
-                                    <input type="text" id="cardCVC" class="form-control" placeholder="123" maxlength="3">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="cardName">Nome no Cartão</label>
-                                <input type="text" id="cardName" class="form-control" placeholder="Nome completo">
-                            </div>
-                        </div>
-                        
-                        <div id="pixForm" style="display: none; text-align: center; padding: 2rem;">
-                            <i class="fas fa-qrcode" style="font-size: 4rem; color: var(--primary); margin-bottom: 1rem;"></i>
-                            <h3>PIX Copia e Cola</h3>
-                            <p style="margin-bottom: 1rem;">Use o código abaixo para pagar via PIX</p>
-                            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-family: monospace; word-break: break-all;">
-                                00020126580014BR.GOV.BCB.PIX0136123e4567-e89b-12d3-a456-4266141740005204000053039865802BR5913PDV SYSTEM6009SAO PAULO62070503***6304E2CA
-                            </div>
-                            <button class="btn btn-outline" onclick="copyPixCode()">
-                                <i class="fas fa-copy"></i> Copiar Código PIX
-                            </button>
-                        </div>
-                        
-                        <div id="boletoForm" style="display: none; text-align: center; padding: 2rem;">
-                            <i class="fas fa-barcode" style="font-size: 4rem; color: var(--primary); margin-bottom: 1rem;"></i>
-                            <h3>Boleto Bancário</h3>
-                            <p style="margin-bottom: 1rem;">O boleto será gerado após a confirmação da compra</p>
-                            <p style="font-size: 0.9rem; color: var(--gray);">Vencimento: 3 dias úteis</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Lado direito: Resumo do pedido -->
-                    <div class="summary">
-                        <h3 style="margin-bottom: 1.5rem;">Resumo do Pedido</h3>
-                        
-                        <div class="summary-item">
-                            <span>Plano selecionado:</span>
-                            <span id="selectedPlanName">Nenhum</span>
-                        </div>
-                        <div class="summary-item">
-                            <span>Valor mensal:</span>
-                            <span id="selectedPlanPrice">R$ 0,00</span>
-                        </div>
-                        <div class="summary-item">
-                            <span>Taxa de instalação:</span>
-                            <span>R$ 0,00</span>
-                        </div>
-                        
-                        <div class="summary-item summary-total">
-                            <span>Total a pagar:</span>
-                            <span id="totalPrice">R$ 0,00</span>
-                        </div>
-                        
-                        <div class="form-group" style="margin-top: 2rem;">
-                            <label for="coupon">Cupom de desconto</label>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="text" id="coupon" class="form-control" placeholder="Digite seu cupom">
-                                <button class="btn btn-outline" onclick="applyCoupon()">Aplicar</button>
-                            </div>
-                        </div>
-                        
-                        <button class="btn btn-success" style="width: 100%; margin-top: 2rem; padding: 15px;" onclick="processPayment()">
-                            <i class="fas fa-lock"></i> Finalizar Compra
-                        </button>
-                        
-                        <p style="text-align: center; margin-top: 1rem; font-size: 0.9rem; color: var(--gray);">
-                            <i class="fas fa-shield-alt"></i> Pagamento 100% seguro
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
     </div>
 
-    <!-- Área Administrativa (apenas para admins) -->
-    <div id="appContainer" class="app-container">
-        <!-- Header Admin -->
-        <header class="admin-header">
-            <div class="container header-content">
-                <div class="logo">
-                    <i class="fas fa-cash-register"></i>
-                    <h1>PDV<span>System</span> Admin</h1>
-                </div>
+    <!-- Sistema Principal (após login) -->
+    <div id="appContainer" class="main-container" style="display: none;">
+        <!-- Header do Sistema -->
+        <header class="system-header">
+            <a href="#" class="system-logo" onclick="showSection('dashboard')">
+                <i class="fas fa-cash-register"></i>
+                <h1>PDV<span>Adega</span> System</h1>
+            </a>
+            
+            <div class="user-menu">
                 <div class="user-info">
-                    <img id="userAvatar" class="user-avatar" src="" alt="Usuário">
-                    <span>Olá, <strong id="userName">Admin</strong></span>
-                    <button id="logoutBtn" class="btn-logout">
-                        <i class="fas fa-sign-out-alt"></i> Sair
-                    </button>
+                    <div class="user-avatar" id="userAvatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span class="user-name" id="userName">Usuário</span>
                 </div>
+                <button id="logoutBtn" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sair
+                </button>
             </div>
         </header>
 
-        <div class="container">
-            <div class="dashboard">
-                <!-- Sidebar Admin -->
-                <aside class="sidebar">
-                    <h3>Menu Admin</h3>
-                    <ul class="sidebar-menu">
-                        <li><a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
-                        <li><a href="#"><i class="fas fa-users"></i> Clientes</a></li>
-                        <li><a href="#"><i class="fas fa-credit-card"></i> Planos</a></li>
-                        <li><a href="#"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
-                        <li><a href="#"><i class="fas fa-cog"></i> Configurações</a></li>
-                        <li><a href="#"><i class="fas fa-question-circle"></i> Ajuda</a></li>
-                    </ul>
-                </aside>
+        <!-- Conteúdo Principal -->
+        <div class="content-wrapper">
+            <!-- Sidebar de Navegação -->
+            <nav class="sidebar">
+                <div class="nav-section">
+                    <h3>Menu Principal</h3>
+                    <div class="nav-items">
+                        <a href="#" class="nav-item active" onclick="showSection('dashboard')">
+                            <i class="fas fa-home"></i>
+                            Dashboard
+                        </a>
+                        <a href="#" class="nav-item" onclick="showSection('pdv')">
+                            <i class="fas fa-shopping-cart"></i>
+                            PDV Adega
+                        </a>
+                        <a href="#" class="nav-item" onclick="showSection('plans')">
+                            <i class="fas fa-credit-card"></i>
+                            Planos
+                        </a>
+                        <a href="#" class="nav-item" onclick="showSection('payment')">
+                            <i class="fas fa-qrcode"></i>
+                            Pagar via PIX
+                        </a>
+                        <a href="#" class="nav-item" onclick="showSection('history')">
+                            <i class="fas fa-history"></i>
+                            Histórico
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="nav-section">
+                    <h3>Administrativo</h3>
+                    <div class="nav-items">
+                        <a href="#" class="nav-item" onclick="showSection('products')">
+                            <i class="fas fa-box"></i>
+                            Produtos
+                        </a>
+                        <a href="#" class="nav-item" onclick="showSection('reports')">
+                            <i class="fas fa-chart-bar"></i>
+                            Relatórios
+                        </a>
+                        <a href="#" class="nav-item" onclick="showSection('settings')">
+                            <i class="fas fa-cog"></i>
+                            Configurações
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Status da Assinatura -->
+                <div class="subscription-status" id="subscriptionStatus">
+                    <h4>Seu Plano</h4>
+                    <p id="currentPlan">Básico</p>
+                    <p id="expiryDate">Expira em: --/--/----</p>
+                    <button class="btn-renew" onclick="showSection('plans')">
+                        <i class="fas fa-sync-alt"></i>
+                        Renovar Plano
+                    </button>
+                </div>
+            </nav>
 
-                <!-- Conteúdo Principal Admin -->
-                <main class="main-content">
-                    <!-- Cards de Estatísticas -->
-                    <section>
-                        <h2 class="section-header">Visão Geral</h2>
-                        <div class="stats-cards">
-                            <div class="stat-card">
-                                <div class="stat-icon blue">
-                                    <i class="fas fa-users"></i>
+            <!-- Área de Conteúdo -->
+            <main class="main-content">
+                <!-- Dashboard -->
+                <section id="dashboard-section" class="content-section active">
+                    <div class="section-header">
+                        <h2>Dashboard</h2>
+                        <p>Bem-vindo de volta ao PDV Adega System</p>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div style="background: white; padding: 1.5rem; border-radius: var(--border-radius); box-shadow: var(--shadow);">
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-shopping-cart" style="color: white; font-size: 1.5rem;"></i>
                                 </div>
-                                <div class="stat-info">
-                                    <h3 id="activeClients">154</h3>
-                                    <p>Clientes Ativos</p>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon green">
-                                    <i class="fas fa-dollar-sign"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h3 id="monthlyRevenue">R$ 8.240</h3>
-                                    <p>Receita Mensal</p>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon orange">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h3 id="expiringPlans">12</h3>
-                                    <p>Planos a Vencer</p>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon purple">
-                                    <i class="fas fa-percentage"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h3 id="renewalRate">94%</h3>
-                                    <p>Taxa de Renovação</p>
+                                <div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-color);">Vendas Hoje</div>
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--dark-color);" id="salesToday">0</div>
                                 </div>
                             </div>
                         </div>
-                    </section>
-
-                    <!-- Tabela de Clientes -->
-                    <section>
-                        <div class="section-header">
-                            <h2>Clientes Ativos</h2>
-                            <button class="btn btn-success">
-                                <i class="fas fa-plus"></i> Novo Cliente
+                        
+                        <div style="background: white; padding: 1.5rem; border-radius: var(--border-radius); box-shadow: var(--shadow);">
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-dollar-sign" style="color: white; font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-color);">Receita Hoje</div>
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--dark-color);" id="revenueToday">R$ 0,00</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: white; padding: 1.5rem; border-radius: var(--border-radius); box-shadow: var(--shadow);">
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-box" style="color: white; font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-color);">Produtos em Estoque</div>
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--dark-color);" id="stockProducts">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: white; padding: 2rem; border-radius: var(--border-radius); box-shadow: var(--shadow);">
+                        <h3 style="margin-bottom: 1.5rem; color: var(--dark-color);">Acesso Rápido</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <button class="btn btn-primary" onclick="showSection('pdv')">
+                                <i class="fas fa-cash-register"></i>
+                                Abrir PDV
+                            </button>
+                            <button class="btn btn-success" onclick="showSection('products')">
+                                <i class="fas fa-box"></i>
+                                Gerenciar Produtos
+                            </button>
+                            <button class="btn btn-warning" onclick="showSection('payment')">
+                                <i class="fas fa-qrcode"></i>
+                                Gerar PIX
+                            </button>
+                            <button class="btn" style="background: var(--accent-color); color: white;" onclick="showSection('reports')">
+                                <i class="fas fa-chart-bar"></i>
+                                Ver Relatórios
                             </button>
                         </div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Cliente</th>
-                                        <th>Plano</th>
-                                        <th>Valor</th>
-                                        <th>Vencimento</th>
-                                        <th>Status</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="clientsTable">
-                                    <!-- Dados serão carregados via JavaScript -->
-                                </tbody>
-                            </table>
+                    </div>
+                </section>
+
+                <!-- PDV Adega -->
+                <section id="pdv-section" class="content-section">
+                    <div class="section-header">
+                        <h2>PDV Adega</h2>
+                        <p>Sistema de ponto de venda completo para sua adega</p>
+                    </div>
+                    
+                    <div class="pdv-embed-container">
+                        <!-- O PDV será carregado aqui -->
+                        <div id="pdvContent" style="width: 100%; height: 100%;">
+                            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--gray-color);">
+                                <div style="text-align: center;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                                    <p>Carregando PDV Adega...</p>
+                                </div>
+                            </div>
                         </div>
-                    </section>
-                </main>
-            </div>
+                    </div>
+                </section>
+
+                <!-- Planos -->
+                <section id="plans-section" class="content-section">
+                    <div class="section-header">
+                        <h2>Planos Disponíveis</h2>
+                        <p>Escolha o plano ideal para o seu negócio</p>
+                    </div>
+                    
+                    <div class="plans-container">
+                        <!-- Plano Básico -->
+                        <div class="plan-card plan-basic">
+                            <div class="plan-header">
+                                <h3 class="plan-title">Básico</h3>
+                                <div class="plan-price">R$ 49,90</div>
+                                <div class="plan-period">por mês</div>
+                            </div>
+                            <div class="plan-features">
+                                <ul>
+                                    <li><i class="fas fa-check"></i> Até 100 vendas/mês</li>
+                                    <li><i class="fas fa-check"></i> 1 usuário</li>
+                                    <li><i class="fas fa-check"></i> Suporte por e-mail</li>
+                                    <li><i class="fas fa-check"></i> Relatórios básicos</li>
+                                    <li><i class="fas fa-times"></i> Backup automático</li>
+                                    <li><i class="fas fa-times"></i> Multiplos usuários</li>
+                                </ul>
+                            </div>
+                            <div class="plan-footer">
+                                <button class="btn-select-plan" onclick="selectPlan('Básico', 49.90)">
+                                    Selecionar Plano
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Plano Profissional -->
+                        <div class="plan-card plan-pro popular">
+                            <div class="plan-badge">MAIS POPULAR</div>
+                            <div class="plan-header">
+                                <h3 class="plan-title">Profissional</h3>
+                                <div class="plan-price">R$ 99,90</div>
+                                <div class="plan-period">por mês</div>
+                            </div>
+                            <div class="plan-features">
+                                <ul>
+                                    <li><i class="fas fa-check"></i> Até 500 vendas/mês</li>
+                                    <li><i class="fas fa-check"></i> Até 3 usuários</li>
+                                    <li><i class="fas fa-check"></i> Suporte prioritário</li>
+                                    <li><i class="fas fa-check"></i> Relatórios avançados</li>
+                                    <li><i class="fas fa-check"></i> Backup automático</li>
+                                    <li><i class="fas fa-times"></i> Integração com ERP</li>
+                                </ul>
+                            </div>
+                            <div class="plan-footer">
+                                <button class="btn-select-plan" onclick="selectPlan('Profissional', 99.90)">
+                                    Selecionar Plano
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Plano Premium -->
+                        <div class="plan-card plan-premium">
+                            <div class="plan-header">
+                                <h3 class="plan-title">Premium</h3>
+                                <div class="plan-price">R$ 199,90</div>
+                                <div class="plan-period">por mês</div>
+                            </div>
+                            <div class="plan-features">
+                                <ul>
+                                    <li><i class="fas fa-check"></i> Vendas ilimitadas</li>
+                                    <li><i class="fas fa-check"></i> Até 10 usuários</li>
+                                    <li><i class="fas fa-check"></i> Suporte 24/7</li>
+                                    <li><i class="fas fa-check"></i> Relatórios personalizados</li>
+                                    <li><i class="fas fa-check"></i> Backup em nuvem</li>
+                                    <li><i class="fas fa-check"></i> Integração com ERP</li>
+                                </ul>
+                            </div>
+                            <div class="plan-footer">
+                                <button class="btn-select-plan" onclick="selectPlan('Premium', 199.90)">
+                                    Selecionar Plano
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Pagamento PIX -->
+                <section id="payment-section" class="content-section">
+                    <div class="payment-container">
+                        <div class="section-header">
+                            <h2>Pagamento via PIX</h2>
+                            <p>Pague seu plano de forma rápida e segura</p>
+                        </div>
+                        
+                        <div class="pix-box">
+                            <div class="payment-header">
+                                <h3>Gerar QR Code PIX</h3>
+                                <p>Escaneie o código abaixo com seu aplicativo bancário</p>
+                            </div>
+                            
+                            <div class="pix-status" id="pixStatus">
+                                <i class="fas fa-clock"></i>
+                                <span>Aguardando seleção do plano...</span>
+                            </div>
+                            
+                            <div id="pixContent" style="display: none;">
+                                <div class="pix-content">
+                                    <div class="qr-section">
+                                        <h4>QR Code para pagamento</h4>
+                                        <div class="qr-container">
+                                            <div id="pixQrCode"></div>
+                                        </div>
+                                        <p style="color: var(--gray-color);">
+                                            Escaneie com seu app bancário
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="code-section">
+                                        <h4>Código PIX Copia e Cola</h4>
+                                        <div class="pix-code-box" onclick="copyPixCode()">
+                                            <button class="copy-btn" id="copyBtn">
+                                                <i class="fas fa-copy"></i> Copiar
+                                            </button>
+                                            <div class="pix-code" id="pixCode">
+                                                Aguardando geração do código PIX...
+                                            </div>
+                                        </div>
+                                        <p style="color: var(--gray-color);">
+                                            Copie o código e cole no app do seu banco
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="timer-section">
+                                    <div class="timer-title">Tempo restante para pagamento</div>
+                                    <div class="timer" id="pixTimer">30:00</div>
+                                    <div style="color: var(--gray-color); font-size: 0.9rem;">
+                                        Este QR Code expira em <span id="expiryTime">30 minutos</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="instructions">
+                                    <h4><i class="fas fa-info-circle"></i> Como pagar com PIX</h4>
+                                    <ol>
+                                        <li>Abra o aplicativo do seu banco</li>
+                                        <li>Procure pela opção "Pagar com PIX"</li>
+                                        <li>Escaneie o QR Code ou cole o código PIX</li>
+                                        <li>Confira os dados e confirme o pagamento</li>
+                                        <li>O sistema será liberado automaticamente</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            
+                            <div class="order-summary" id="orderSummary" style="display: none;">
+                                <h4><i class="fas fa-receipt"></i> Resumo do Pedido</h4>
+                                
+                                <div class="summary-item">
+                                    <span>Plano selecionado:</span>
+                                    <span id="selectedPlanName">--</span>
+                                </div>
+                                
+                                <div class="summary-item">
+                                    <span>Valor:</span>
+                                    <span id="selectedPlanPrice">R$ 0,00</span>
+                                </div>
+                                
+                                <div class="summary-item">
+                                    <span>Válido por:</span>
+                                    <span>30 dias</span>
+                                </div>
+                                
+                                <div class="summary-item summary-total">
+                                    <span>Total:</span>
+                                    <span id="totalPrice">R$ 0,00</span>
+                                </div>
+                                
+                                <button class="btn btn-success btn-block" onclick="verifyPayment()" style="margin-top: 1.5rem;">
+                                    <i class="fas fa-check-circle"></i> Já fiz o pagamento
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Outras seções (simplificadas) -->
+                <section id="history-section" class="content-section">
+                    <div class="section-header">
+                        <h2>Histórico</h2>
+                        <p>Seu histórico de pagamentos e atividades</p>
+                    </div>
+                    <div style="background: white; padding: 2rem; border-radius: var(--border-radius); box-shadow: var(--shadow);">
+                        <p style="color: var(--gray-color);">Histórico será carregado aqui...</p>
+                    </div>
+                </section>
+
+                <section id="products-section" class="content-section">
+                    <div class="section-header">
+                        <h2>Produtos</h2>
+                        <p>Gerencie seu catálogo de produtos</p>
+                    </div>
+                    <div style="background: white; padding: 2rem; border-radius: var(--border-radius); box-shadow: var(--shadow);">
+                        <p style="color: var(--gray-color);">Gestão de produtos será carregada aqui...</p>
+                    </div>
+                </section>
+
+                <section id="reports-section" class="content-section">
+                    <div class="section-header">
+                        <h2>Relatórios</h2>
+                        <p>Análises e insights do seu negócio</p>
+                    </div>
+                    <div style="background: white; padding: 2rem; border-radius: var(--border-radius); box-shadow: var(--shadow);">
+                        <p style="color: var(--gray-color);">Relatórios serão carregados aqui...</p>
+                    </div>
+                </section>
+
+                <section id="settings-section" class="content-section">
+                    <div class="section-header">
+                        <h2>Configurações</h2>
+                        <p>Personalize seu sistema</p>
+                    </div>
+                    <div style="background: white; padding: 2rem; border-radius: var(--border-radius); box-shadow: var(--shadow);">
+                        <p style="color: var(--gray-color);">Configurações serão carregadas aqui...</p>
+                    </div>
+                </section>
+            </main>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="main-footer" id="contact">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-about">
-                    <div class="footer-logo">
-                        <i class="fas fa-cash-register"></i>
-                        <h2>PDV<span>System</span></h2>
-                    </div>
-                    <p>Sistema completo de ponto de venda para pequenos e médios negócios. Simplifique suas vendas, controle seu estoque e cresça seu negócio.</p>
-                </div>
-                <div class="footer-links">
-                    <h4>Links Rápidos</h4>
-                    <ul>
-                        <li><a href="#home">Início</a></li>
-                        <li><a href="#features">Recursos</a></li>
-                        <li><a href="#plans">Planos</a></li>
-                        <li><a href="#payment">Pagamento</a></li>
-                    </ul>
-                </div>
-                <div class="footer-links">
-                    <h4>Suporte</h4>
-                    <ul>
-                        <li><a href="#">Central de Ajuda</a></li>
-                        <li><a href="#">Documentação</a></li>
-                        <li><a href="#">Contato</a></li>
-                        <li><a href="#">Status do Sistema</a></li>
-                    </ul>
-                </div>
-                <div class="footer-links">
-                    <h4>Contato</h4>
-                    <ul>
-                        <li><i class="fas fa-phone"></i> (11) 99999-9999</li>
-                        <li><i class="fas fa-envelope"></i> suporte@pdvsystem.com.br</li>
-                        <li><i class="fas fa-map-marker-alt"></i> São Paulo, SP</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>PDV System &copy; 2023 - Todos os direitos reservados</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Modal de Login -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content login-modal-content">
+    <!-- Modal de Confirmação -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
             <div class="modal-header">
-                <h3>Área do Cliente</h3>
-                <button class="close-modal" onclick="closeLoginModal()">&times;</button>
+                <h3>Confirmar Ação</h3>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
             </div>
-            <div>
-                <p style="margin-bottom: 1.5rem;">Faça login para acessar sua conta ou para acessar a área administrativa.</p>
-                
-                <div class="login-options">
-                    <button id="googleLoginBtn" class="btn-google">
-                        <img src="https://www.google.com/favicon.ico" alt="Google">
-                        Entrar com Google
-                    </button>
-                </div>
-                
-                <div style="margin-top: 2rem; padding: 1rem; background-color: #f8f9fa; border-radius: 8px;">
-                    <p style="font-size: 0.9rem; color: var(--gray);">
-                        <i class="fas fa-info-circle"></i> 
-                        <strong>Área administrativa:</strong> Apenas emails autorizados têm acesso à área de administração.
-                    </p>
-                </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Conteúdo dinâmico -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-primary" id="modalConfirmBtn">Confirmar</button>
             </div>
         </div>
     </div>
@@ -1365,80 +1425,61 @@
             measurementId: "G-6BT5HW6JV8"
         };
 
+        // ===== CONFIGURAÇÃO MERCADO PAGO =====
+        const MERCADO_PAGO_CONFIG = {
+            publicKey: 'APP_USR-3b0abda0-39e7-4cdf-a6c2-7ad74c830bcc',
+            accessToken: 'APP_USR-6861213688084120-122618-45b758a772d0bc0a11496a521d116a17-2933530645',
+            userId: '2933530645'
+        };
+
+        // ===== INICIALIZAÇÃO =====
+        let currentUser = null;
+        let db = null;
+        let currentPlan = null;
+        let pixTransactionId = null;
+        let timerInterval = null;
+        let timeLeft = 30 * 60;
+        let selectedPlanData = null;
+
+        // Emails autorizados para administração
+        const ADMIN_EMAILS = [
+            "admin@pdvsystem.com",
+            "pablohenriquerodriguesgracioli@gmail.com" // ADICIONE SEU EMAIL AQUI
+        ];
+
+        // Planos disponíveis
+        const PLANS = {
+            'Básico': { price: 49.90, features: ['100 vendas/mês', '1 usuário', 'Suporte email'] },
+            'Profissional': { price: 99.90, features: ['500 vendas/mês', '3 usuários', 'Suporte prioritário'] },
+            'Premium': { price: 199.90, features: ['Vendas ilimitadas', '10 usuários', 'Suporte 24/7'] }
+        };
+
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
 
-        // ===== VARIÁVEIS GLOBAIS =====
-        let currentUser = null;
-        let selectedPlan = null;
-        let selectedPlanPrice = 0;
-        let selectedPaymentMethod = 'credit';
-        const ADMIN_EMAILS = ["admin@pdvsystem.com", "pablohenriquerodriguesgracioli@gmail.com"]; // Adicione seus emails admin aqui
-
-        // ===== INICIALIZAÇÃO =====
-        document.addEventListener('DOMContentLoaded', function() {
-            // Configurar navegação mobile
-            document.getElementById('mobileMenuBtn').addEventListener('click', toggleMobileMenu);
-            
-            // Fechar menu mobile ao clicar em um link
-            document.querySelectorAll('.nav-menu a').forEach(link => {
-                link.addEventListener('click', () => {
-                    document.getElementById('navMenu').classList.remove('active');
-                });
-            });
-            
-            // Inicializar Firebase Auth
-            initFirebaseAuth();
-            
-            // Inicializar dados da página pública
-            initPublicPage();
-        });
-
-        // ===== FIREBASE AUTH =====
-        function initFirebaseAuth() {
-            auth.onAuthStateChanged((user) => {
+        // ===== FUNÇÕES DE AUTENTICAÇÃO =====
+        function initAuth() {
+            auth.onAuthStateChanged(async (user) => {
                 currentUser = user;
                 
                 if (user) {
-                    // Usuário está logado
-                    updateAuthUI(user);
+                    // Verificar se é admin ou tem plano ativo
+                    const userData = await getUserData(user.uid);
                     
-                    // Verificar se é admin
-                    if (ADMIN_EMAILS.includes(user.email)) {
-                        showAdminPanel(user);
+                    if (ADMIN_EMAILS.includes(user.email) || (userData && userData.activePlan)) {
+                        // Tem acesso ao sistema
+                        showApp(user, userData);
                     } else {
-                        showPublicPage();
+                        // Não tem plano ativo, mostrar página de planos
+                        showApp(user, null);
+                        showSection('plans');
                     }
                 } else {
-                    // Usuário não está logado
-                    updateAuthUI(null);
-                    showPublicPage();
+                    showLoginPage();
                 }
             });
-        }
-
-        function updateAuthUI(user) {
-            const authSection = document.getElementById('authSection');
-            
-            if (user) {
-                authSection.innerHTML = `
-                    <div class="user-info" style="margin-left: 0;">
-                        <img class="user-avatar" src="${user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || user.email) + '&background=4361ee&color=fff'}" alt="Usuário">
-                        <span>${user.displayName || user.email}</span>
-                        <button class="btn-logout" onclick="logout()">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </div>
-                `;
-            } else {
-                authSection.innerHTML = `
-                    <button class="btn btn-primary" onclick="openLoginModal()">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </button>
-                `;
-            }
         }
 
         function loginWithGoogle() {
@@ -1447,28 +1488,35 @@
             auth.signInWithPopup(provider)
                 .then((result) => {
                     const user = result.user;
-                    closeLoginModal();
-                    
-                    // Salvar dados do usuário no banco
                     saveUserData(user);
                 })
                 .catch((error) => {
                     console.error("Erro no login:", error);
-                    alert("Erro ao fazer login. Tente novamente.");
+                    showLoginError("Erro ao fazer login. Tente novamente.");
                 });
         }
 
         function logout() {
             auth.signOut()
                 .then(() => {
-                    showPublicPage();
+                    showLoginPage();
                 })
                 .catch((error) => {
                     console.error("Erro ao fazer logout:", error);
                 });
         }
 
-        function saveUserData(user) {
+        async function getUserData(userId) {
+            try {
+                const snapshot = await database.ref('users/' + userId).once('value');
+                return snapshot.val();
+            } catch (error) {
+                console.error("Erro ao buscar dados do usuário:", error);
+                return null;
+            }
+        }
+
+        async function saveUserData(user) {
             const userData = {
                 name: user.displayName,
                 email: user.email,
@@ -1476,274 +1524,483 @@
                 lastLogin: new Date().toISOString()
             };
             
-            database.ref('users/' + user.uid).set(userData);
+            try {
+                await database.ref('users/' + user.uid).set(userData);
+            } catch (error) {
+                console.error("Erro ao salvar dados do usuário:", error);
+            }
         }
 
-        // ===== CONTROLE DE VISUALIZAÇÃO =====
-        function showPublicPage() {
-            document.getElementById('publicPage').style.display = 'block';
+        // ===== CONTROLE DE INTERFACE =====
+        function showLoginPage() {
+            document.getElementById('loginPage').style.display = 'flex';
             document.getElementById('appContainer').style.display = 'none';
-            updatePublicNav();
+            document.getElementById('loginError').style.display = 'none';
         }
 
-        function showAdminPanel(user) {
-            document.getElementById('publicPage').style.display = 'none';
-            document.getElementById('appContainer').style.display = 'block';
+        function showApp(user, userData) {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'flex';
             
-            // Atualizar informações do usuário admin
+            // Atualizar informações do usuário
             document.getElementById('userName').textContent = user.displayName || user.email;
-            document.getElementById('userAvatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email)}&background=4361ee&color=fff`;
             
-            // Carregar dados do admin
-            loadAdminData();
-        }
-
-        function updatePublicNav() {
-            const navLinks = document.querySelectorAll('.nav-menu a');
-            navLinks.forEach(link => {
-                if (link.getAttribute('href') === '#payment') {
-                    link.textContent = 'Pagamento';
-                }
-            });
-        }
-
-        // ===== FUNÇÕES DA PÁGINA PÚBLICA =====
-        function initPublicPage() {
-            // Configurar seleção de plano
-            document.querySelectorAll('.plan-card .btn-primary').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const planCard = this.closest('.plan-card');
-                    const planName = planCard.querySelector('.plan-title').textContent;
-                    const planPriceText = planCard.querySelector('.plan-price').textContent;
-                    const planPrice = parseFloat(planPriceText.replace('R$ ', '').replace(',', '.'));
-                    
-                    selectPlan(planName, planPrice);
-                });
-            });
-            
-            // Configurar seleção de método de pagamento
-            document.querySelectorAll('.payment-method').forEach(method => {
-                method.addEventListener('click', function() {
-                    const methodType = this.querySelector('h4').textContent.toLowerCase();
-                    
-                    if (methodType.includes('crédito')) {
-                        selectPaymentMethod('credit');
-                    } else if (methodType.includes('pix')) {
-                        selectPaymentMethod('pix');
-                    } else if (methodType.includes('boleto')) {
-                        selectPaymentMethod('boleto');
-                    }
-                });
-            });
-            
-            // Formatar número do cartão
-            document.getElementById('cardNumber').addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, '');
-                value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
-                e.target.value = value.substring(0, 19);
-            });
-            
-            // Formatar validade
-            document.getElementById('cardExpiry').addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length >= 2) {
-                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
-                }
-                e.target.value = value.substring(0, 5);
-            });
-        }
-
-        function selectPlan(planName, planPrice) {
-            selectedPlan = planName;
-            selectedPlanPrice = planPrice;
-            
-            // Atualizar resumo
-            document.getElementById('selectedPlanName').textContent = planName;
-            document.getElementById('selectedPlanPrice').textContent = `R$ ${planPrice.toFixed(2).replace('.', ',')}`;
-            document.getElementById('totalPrice').textContent = `R$ ${planPrice.toFixed(2).replace('.', ',')}`;
-            
-            // Rolar para a seção de pagamento
-            scrollToSection('payment');
-        }
-
-        function selectPaymentMethod(method) {
-            selectedPaymentMethod = method;
-            
-            // Atualar UI
-            document.querySelectorAll('.payment-method').forEach(el => {
-                el.classList.remove('selected');
-            });
-            
-            if (method === 'credit') {
-                document.querySelector('.payment-method:nth-child(1)').classList.add('selected');
-                document.getElementById('creditCardForm').style.display = 'block';
-                document.getElementById('pixForm').style.display = 'none';
-                document.getElementById('boletoForm').style.display = 'none';
-            } else if (method === 'pix') {
-                document.querySelector('.payment-method:nth-child(2)').classList.add('selected');
-                document.getElementById('creditCardForm').style.display = 'none';
-                document.getElementById('pixForm').style.display = 'block';
-                document.getElementById('boletoForm').style.display = 'none';
-            } else if (method === 'boleto') {
-                document.querySelector('.payment-method:nth-child(3)').classList.add('selected');
-                document.getElementById('creditCardForm').style.display = 'none';
-                document.getElementById('pixForm').style.display = 'none';
-                document.getElementById('boletoForm').style.display = 'block';
-            }
-        }
-
-        function applyCoupon() {
-            const coupon = document.getElementById('coupon').value.trim().toUpperCase();
-            let discount = 0;
-            
-            if (coupon === 'PDV10') {
-                discount = 0.1; // 10% de desconto
-                alert('Cupom PDV10 aplicado! 10% de desconto concedido.');
-            } else if (coupon === 'PDV20') {
-                discount = 0.2; // 20% de desconto
-                alert('Cupom PDV20 aplicado! 20% de desconto concedido.');
-            } else if (coupon) {
-                alert('Cupom inválido ou expirado.');
-                return;
-            }
-            
-            if (discount > 0 && selectedPlanPrice > 0) {
-                const discountedPrice = selectedPlanPrice * (1 - discount);
-                document.getElementById('totalPrice').textContent = `R$ ${discountedPrice.toFixed(2).replace('.', ',')}`;
-            }
-        }
-
-        function processPayment() {
-            if (!selectedPlan) {
-                alert('Por favor, selecione um plano antes de prosseguir.');
-                scrollToSection('plans');
-                return;
-            }
-            
-            if (selectedPaymentMethod === 'credit') {
-                // Validar cartão de crédito
-                const cardNumber = document.getElementById('cardNumber').value;
-                const cardExpiry = document.getElementById('cardExpiry').value;
-                const cardCVC = document.getElementById('cardCVC').value;
-                const cardName = document.getElementById('cardName').value;
-                
-                if (!cardNumber || !cardExpiry || !cardCVC || !cardName) {
-                    alert('Por favor, preencha todas as informações do cartão.');
-                    return;
-                }
-            }
-            
-            // Simular processamento
-            alert(`Pagamento processado com sucesso!\nPlano: ${selectedPlan}\nValor: R$ ${selectedPlanPrice.toFixed(2)}\nMétodo: ${selectedPaymentMethod}`);
-            
-            // Redirecionar para área do cliente (ou criar conta se não estiver logado)
-            if (!currentUser) {
-                alert('Crie uma conta ou faça login para acessar o sistema.');
-                openLoginModal();
+            const userAvatar = document.getElementById('userAvatar');
+            if (user.photoURL) {
+                userAvatar.innerHTML = `<img src="${user.photoURL}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%;">`;
             } else {
-                alert('Bem-vindo ao PDV System! Seu plano foi ativado.');
-                // Aqui você redirecionaria para o PDV real
+                const initials = (user.displayName || user.email).charAt(0).toUpperCase();
+                userAvatar.innerHTML = `<span>${initials}</span>`;
+            }
+            
+            // Atualizar status da assinatura
+            if (userData && userData.activePlan) {
+                currentPlan = userData.activePlan;
+                document.getElementById('currentPlan').textContent = userData.activePlan.name || 'Ativo';
+                document.getElementById('expiryDate').textContent = `Expira em: ${formatDate(userData.activePlan.expiryDate)}`;
+                
+                // Se tem plano ativo, carregar o PDV
+                if (userData.activePlan.status === 'active') {
+                    loadPDV();
+                }
+            } else {
+                document.getElementById('currentPlan').textContent = 'Sem Plano';
+                document.getElementById('expiryDate').textContent = 'Adquira um plano para acessar o PDV';
+            }
+        }
+
+        function showLoginError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('loginError').style.display = 'block';
+        }
+
+        function showSection(sectionId) {
+            // Esconder todas as seções
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remover classe active de todos os itens do menu
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Mostrar a seção selecionada
+            const section = document.getElementById(sectionId + '-section');
+            if (section) {
+                section.classList.add('active');
+            }
+            
+            // Ativar o item do menu correspondente
+            const navItem = document.querySelector(`.nav-item[onclick*="${sectionId}"]`);
+            if (navItem) {
+                navItem.classList.add('active');
+            }
+            
+            // Se for a seção do PDV e o usuário tem plano ativo
+            if (sectionId === 'pdv' && currentPlan) {
+                loadPDV();
+            }
+        }
+
+        // ===== FUNÇÕES DO PDV =====
+        function loadPDV() {
+            const pdvContent = document.getElementById('pdvContent');
+            if (!pdvContent) return;
+            
+            // Se já carregou o PDV, apenas mostrar
+            if (pdvContent.dataset.loaded === 'true') {
+                return;
+            }
+            
+            // Simular carregamento do PDV
+            pdvContent.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                    <div style="text-align: center;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 3rem; margin-bottom: 1rem; color: var(--accent-color);"></i>
+                        <p style="color: var(--gray-color);">Carregando PDV Adega...</p>
+                        <p style="color: var(--gray-color); font-size: 0.875rem; margin-top: 1rem;">
+                            Se o PDV não carregar automaticamente, <a href="#" onclick="reloadPDV()" style="color: var(--accent-color);">clique aqui</a>
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            // Aqui você carregaria o PDV real
+            // Por enquanto, vamos mostrar um placeholder
+            setTimeout(() => {
+                pdvContent.innerHTML = `
+                    <div style="padding: 2rem;">
+                        <div style="background: white; border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 2rem; text-align: center;">
+                            <i class="fas fa-cash-register" style="font-size: 4rem; color: var(--accent-color); margin-bottom: 1rem;"></i>
+                            <h3 style="color: var(--dark-color); margin-bottom: 1rem;">PDV Adega Carregado</h3>
+                            <p style="color: var(--gray-color); margin-bottom: 2rem;">
+                                Sistema de ponto de venda pronto para uso!
+                            </p>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                <button class="btn btn-primary" onclick="startNewSale()">
+                                    <i class="fas fa-plus"></i> Nova Venda
+                                </button>
+                                <button class="btn btn-success" onclick="showProducts()">
+                                    <i class="fas fa-box"></i> Ver Produtos
+                                </button>
+                                <button class="btn btn-warning" onclick="showReports()">
+                                    <i class="fas fa-chart-bar"></i> Relatórios
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 2rem; background: white; border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 2rem;">
+                            <h4 style="color: var(--dark-color); margin-bottom: 1rem;">Status do Sistema</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 2rem; font-weight: 700; color: var(--accent-color);">0</div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-color);">Vendas Hoje</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 2rem; font-weight: 700; color: var(--success-color);">R$ 0,00</div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-color);">Receita Hoje</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 2rem; font-weight: 700; color: var(--warning-color);">0</div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-color);">Produtos</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                pdvContent.dataset.loaded = 'true';
+            }, 2000);
+        }
+
+        function reloadPDV() {
+            const pdvContent = document.getElementById('pdvContent');
+            pdvContent.dataset.loaded = 'false';
+            loadPDV();
+        }
+
+        function startNewSale() {
+            alert('Iniciando nova venda...');
+            // Aqui você implementaria a lógica de nova venda
+        }
+
+        function showProducts() {
+            alert('Abrindo gestão de produtos...');
+        }
+
+        function showReports() {
+            alert('Abrindo relatórios...');
+        }
+
+        // ===== FUNÇÕES DE PLANOS E PAGAMENTO =====
+        function selectPlan(planName, price) {
+            selectedPlanData = {
+                name: planName,
+                price: price,
+                date: new Date().toISOString()
+            };
+            
+            // Atualizar resumo do pedido
+            document.getElementById('selectedPlanName').textContent = planName;
+            document.getElementById('selectedPlanPrice').textContent = `R$ ${price.toFixed(2)}`;
+            document.getElementById('totalPrice').textContent = `R$ ${price.toFixed(2)}`;
+            
+            // Mostrar seção de pagamento
+            showSection('payment');
+            
+            // Mostrar resumo do pedido
+            document.getElementById('orderSummary').style.display = 'block';
+            
+            // Gerar PIX
+            setTimeout(() => {
+                generatePixPayment(planName, price);
+            }, 500);
+        }
+
+        async function generatePixPayment(planName, price) {
+            try {
+                // Atualizar status
+                document.getElementById('pixStatus').innerHTML = `
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Gerando QR Code PIX...</span>
+                `;
+                
+                // Simulação de geração de PIX
+                // Em produção, você integraria com a API do Mercado Pago
+                
+                const pixData = {
+                    qrCode: await generateQRCode(`PDV Adega - Plano ${planName} - R$ ${price}`),
+                    pixCode: `00020126580014BR.GOV.BCB.PIX0136${Math.random().toString(36).substr(2, 36)}5204000053039865802BR5913PDV ADEGA6009SAO PAULO62070503***6304E2CA`
+                };
+                
+                // Atualizar interface
+                document.getElementById('pixQrCode').innerHTML = `<img src="${pixData.qrCode}" alt="QR Code PIX" style="width: 100%; height: auto;">`;
+                document.getElementById('pixCode').textContent = pixData.pixCode;
+                
+                document.getElementById('pixStatus').innerHTML = `
+                    <i class="fas fa-clock"></i>
+                    <span>Aguardando pagamento...</span>
+                `;
+                document.getElementById('pixStatus').className = 'pix-status pending';
+                
+                document.getElementById('pixContent').style.display = 'block';
+                
+                // Iniciar timer
+                startPaymentTimer();
+                
+                // Salvar transação
+                await saveTransaction(pixData, planName, price);
+                
+            } catch (error) {
+                console.error('Erro ao gerar PIX:', error);
+                document.getElementById('pixStatus').innerHTML = `
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Erro ao gerar PIX. Tente novamente.</span>
+                `;
+                document.getElementById('pixStatus').className = 'pix-status error';
+            }
+        }
+
+        async function generateQRCode(text) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                QRCode.toCanvas(canvas, text, {
+                    width: 250,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                }, () => {
+                    resolve(canvas.toDataURL());
+                });
+            });
+        }
+
+        function startPaymentTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 30 * 60;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                
+                document.getElementById('pixTimer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                document.getElementById('expiryTime').textContent = 
+                    `${minutes} minutos e ${seconds} segundos`;
+                
+                if (timeLeft < 300) {
+                    document.getElementById('pixTimer').className = 'timer timer-warning';
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('pixTimer').className = 'timer';
+                    document.getElementById('pixTimer').textContent = 'Expirado';
+                    
+                    document.getElementById('pixStatus').innerHTML = `
+                        <i class="fas fa-times-circle"></i>
+                        <span>QR Code expirado</span>
+                    `;
+                    document.getElementById('pixStatus').className = 'pix-status error';
+                }
+            }, 1000);
+        }
+
+        async function saveTransaction(pixData, planName, price) {
+            if (!currentUser) return;
+            
+            const transaction = {
+                id: 'pix_' + Date.now(),
+                userId: currentUser.uid,
+                plan: planName,
+                price: price,
+                pixCode: pixData.pixCode,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+            };
+            
+            try {
+                await database.ref('transactions/' + transaction.id).set(transaction);
+                pixTransactionId = transaction.id;
+            } catch (error) {
+                console.error('Erro ao salvar transação:', error);
             }
         }
 
         function copyPixCode() {
-            const pixCode = document.querySelector('#pixForm div').textContent;
+            const pixCode = document.getElementById('pixCode').textContent;
+            const copyBtn = document.getElementById('copyBtn');
+            
             navigator.clipboard.writeText(pixCode)
                 .then(() => {
-                    alert('Código PIX copiado para a área de transferência!');
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                    copyBtn.classList.add('copied');
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copiar';
+                        copyBtn.classList.remove('copied');
+                    }, 2000);
                 })
                 .catch(err => {
-                    console.error('Erro ao copiar: ', err);
+                    console.error('Erro ao copiar:', err);
+                    alert('Erro ao copiar. Selecione e copie manualmente (Ctrl+C).');
                 });
         }
 
-        // ===== FUNÇÕES ADMIN =====
-        function loadAdminData() {
-            // Carregar dados do Firebase
-            database.ref('clients').once('value')
-                .then(snapshot => {
-                    const clients = snapshot.val();
-                    const tbody = document.getElementById('clientsTable');
-                    tbody.innerHTML = '';
+        async function verifyPayment() {
+            if (!pixTransactionId || !selectedPlanData) {
+                alert('Nenhum pagamento encontrado. Selecione um plano primeiro.');
+                return;
+            }
+            
+            // Simular verificação de pagamento
+            // Em produção, você verificaria com a API do Mercado Pago
+            
+            document.getElementById('pixStatus').innerHTML = `
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Verificando pagamento...</span>
+            `;
+            
+            setTimeout(async () => {
+                // Simulação: 80% de chance de sucesso
+                const isSuccess = Math.random() > 0.2;
+                
+                if (isSuccess) {
+                    // Pagamento confirmado
+                    document.getElementById('pixStatus').innerHTML = `
+                        <i class="fas fa-check-circle"></i>
+                        <span>Pagamento confirmado!</span>
+                    `;
+                    document.getElementById('pixStatus').className = 'pix-status';
                     
-                    let activeCount = 0;
-                    let revenue = 0;
-                    let expiringCount = 0;
+                    // Atualizar plano do usuário
+                    await activateUserPlan();
                     
-                    if (clients) {
-                        Object.keys(clients).forEach(key => {
-                            const client = clients[key];
-                            const row = document.createElement('tr');
-                            
-                            // Calcular se está próximo do vencimento
-                            const dueDate = new Date(client.dueDate);
-                            const today = new Date();
-                            const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-                            const status = daysUntilDue > 0 ? (daysUntilDue <= 7 ? 'pending' : 'active') : 'expired';
-                            
-                            if (status === 'active') activeCount++;
-                            if (status === 'pending') expiringCount++;
-                            revenue += client.planPrice || 0;
-                            
-                            row.innerHTML = `
-                                <td>${client.name || 'Cliente'}</td>
-                                <td>${client.plan || 'Básico'}</td>
-                                <td>R$ ${(client.planPrice || 0).toFixed(2)}</td>
-                                <td>${new Date(client.dueDate).toLocaleDateString('pt-BR')}</td>
-                                <td><span class="status ${status}">${status === 'active' ? 'Ativo' : status === 'pending' ? 'A vencer' : 'Expirado'}</span></td>
-                                <td>
-                                    <button class="btn-icon" title="Editar"><i class="fas fa-edit"></i></button>
-                                    <button class="btn-icon" title="Renovar"><i class="fas fa-sync"></i></button>
-                                </td>
-                            `;
-                            tbody.appendChild(row);
-                        });
-                    }
+                    // Mostrar mensagem de sucesso
+                    showModalMessage('Pagamento Confirmado!', `
+                        <p>Seu pagamento foi processado com sucesso!</p>
+                        <p><strong>Plano:</strong> ${selectedPlanData.name}</p>
+                        <p><strong>Valor:</strong> R$ ${selectedPlanData.price.toFixed(2)}</p>
+                        <p>Agora você pode acessar o PDV Adega completo!</p>
+                    `, () => {
+                        showSection('pdv');
+                    });
                     
-                    // Atualizar estatísticas
-                    document.getElementById('activeClients').textContent = activeCount;
-                    document.getElementById('monthlyRevenue').textContent = `R$ ${revenue.toFixed(0)}`;
-                    document.getElementById('expiringPlans').textContent = expiringCount;
-                    document.getElementById('renewalRate').textContent = '94%';
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar dados:', error);
+                } else {
+                    // Pagamento pendente
+                    document.getElementById('pixStatus').innerHTML = `
+                        <i class="fas fa-clock"></i>
+                        <span>Aguardando confirmação do pagamento...</span>
+                    `;
+                    document.getElementById('pixStatus').className = 'pix-status pending';
+                    
+                    showModalMessage('Pagamento Pendente', `
+                        <p>Seu pagamento ainda não foi confirmado.</p>
+                        <p>Isso pode levar alguns minutos. Tente verificar novamente em breve.</p>
+                    `);
+                }
+            }, 2000);
+        }
+
+        async function activateUserPlan() {
+            if (!currentUser || !selectedPlanData) return;
+            
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 30); // 30 dias de validade
+            
+            const planData = {
+                name: selectedPlanData.name,
+                price: selectedPlanData.price,
+                status: 'active',
+                activatedAt: new Date().toISOString(),
+                expiryDate: expiryDate.toISOString()
+            };
+            
+            try {
+                // Atualizar dados do usuário
+                await database.ref('users/' + currentUser.uid + '/activePlan').set(planData);
+                
+                // Atualizar transação
+                await database.ref('transactions/' + pixTransactionId).update({
+                    status: 'approved',
+                    approvedAt: new Date().toISOString()
                 });
-        }
-
-        // ===== FUNÇÕES UTILITÁRIAS =====
-        function toggleMobileMenu() {
-            document.getElementById('navMenu').classList.toggle('active');
-        }
-
-        function scrollToSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            if (section) {
-                section.scrollIntoView({ behavior: 'smooth' });
+                
+                // Atualizar localmente
+                currentPlan = planData;
+                document.getElementById('currentPlan').textContent = planData.name;
+                document.getElementById('expiryDate').textContent = `Expira em: ${formatDate(planData.expiryDate)}`;
+                
+            } catch (error) {
+                console.error('Erro ao ativar plano:', error);
             }
         }
 
-        function openLoginModal() {
-            document.getElementById('loginModal').style.display = 'flex';
+        // ===== FUNÇÕES AUXILIARES =====
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
         }
 
-        function closeLoginModal() {
-            document.getElementById('loginModal').style.display = 'none';
-        }
-
-        // Fechar modal ao clicar fora
-        window.onclick = function(event) {
-            const loginModal = document.getElementById('loginModal');
-            if (event.target === loginModal) {
-                closeLoginModal();
+        function showModalMessage(title, message, onConfirm = null) {
+            document.getElementById('modalBody').innerHTML = message;
+            
+            const modal = document.getElementById('confirmationModal');
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            
+            // Configurar botão de confirmação
+            if (onConfirm) {
+                confirmBtn.onclick = function() {
+                    closeModal();
+                    onConfirm();
+                };
+                confirmBtn.textContent = 'OK';
+            } else {
+                confirmBtn.onclick = closeModal;
+                confirmBtn.textContent = 'Fechar';
             }
+            
+            modal.style.display = 'flex';
         }
 
-        // Configurar botão de login com Google
-        document.getElementById('googleLoginBtn').addEventListener('click', loginWithGoogle);
-        
-        // Configurar botão de logout admin
-        document.getElementById('logoutBtn').addEventListener('click', logout);
+        function closeModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+        }
+
+        // ===== INICIALIZAÇÃO =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar eventos
+            document.getElementById('googleLoginBtn').addEventListener('click', loginWithGoogle);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            // Fechar modal ao clicar fora
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('confirmationModal');
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            // Inicializar autenticação
+            initAuth();
+        });
+
+        // ===== FUNÇÕES GLOBAIS =====
+        window.copyPixCode = copyPixCode;
+        window.verifyPayment = verifyPayment;
+        window.selectPlan = selectPlan;
+        window.showSection = showSection;
+        window.closeModal = closeModal;
+        window.reloadPDV = reloadPDV;
+        window.startNewSale = startNewSale;
+        window.showProducts = showProducts;
+        window.showReports = showReports;
     </script>
 </body>
 </html>
